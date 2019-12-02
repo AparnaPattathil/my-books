@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.Call
 import okhttp3.Callback
@@ -27,7 +29,6 @@ class MainActivity : AppCompatActivity(), Callback {
 
         button_click_me.setOnClickListener {
             loading.visibility = View.VISIBLE
-//            list.visibility = View.VISIBLE
 //            bookTitle.visibility = View.VISIBLE
 
             val url =
@@ -48,22 +49,25 @@ class MainActivity : AppCompatActivity(), Callback {
             loading.visibility = View.GONE
 //            list.visibility = View.VISIBLE
 //            bookTitle.visibility = View.VISIBLE
+button_click_me.visibility = View.GONE
+//            Log.d("moshi", moshi.)
+            val moshi = Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .build()
 
 
-//            call.execute().use { response ->
-                response.body?.let {
+//            jsonString = adapter.toJson(book)
+            response.body?.let {
                     val jsonObject = JSONObject(it.string())
-                    val results = jsonObject.getJSONObject("results")
-                    val books = results.getJSONArray("books")
+//                Log.d("results", jsonObject.toString())
 
-                    for (book in 0 until books.length()){
-                        val bookItem =books.getJSONObject(book)
-                        val title = bookItem.getString("title")
-                        val rank = bookItem.getString("rank")
-                        Log.d("rank",bookItem.toString())
-                        addTextView("$rank | $title")
-                    }
-
+                var jsonString = jsonObject.toString()
+                val adapter = moshi.adapter(NetworkResult::class.java)
+                val result = adapter.fromJson(jsonString)
+//Log.d("book",book.toString())
+                result?.results?.books?.forEach{
+                   addTextView( it.title)
+                }
                 }
 
 //            }
@@ -84,4 +88,3 @@ class MainActivity : AppCompatActivity(), Callback {
     }
 
 }
-
